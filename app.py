@@ -86,8 +86,8 @@ class TikAPIClient:
     
     async def check_live_status(self, username: str) -> Dict[str, Any]:
         """ユーザーのライブ配信状態をチェック"""
-        url = f"{self.base_url}/user/info"
-        params = {"username": username}
+        url = f"{self.base_url}/public/check"
+        params = {"username": username.lstrip('@')}
         
         start_time = time.time()
         
@@ -105,9 +105,11 @@ class TikAPIClient:
                 if response.status_code == 200:
                     data = response.json()
                     
-                    # TikAPIのレスポンス構造に基づいて解析
-                    user_info = data.get("userInfo", {}).get("user", {})
-                    is_live = user_info.get("roomId") is not None and user_info.get("roomId") != ""
+                    # TikAPIのレスポンス構造: public.checkの場合
+                    # roomIdが存在すればライブ中
+                    is_live = False
+                    if data.get("roomId"):
+                        is_live = True
                     
                     return {
                         "success": True,
@@ -333,3 +335,20 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+```
+
+---
+
+## 📋 使い方
+
+1. **GitHubで app.py を開く**
+2. **編集ボタン（鉛筆アイコン）をクリック**
+3. **全内容を削除**
+4. **上記のコードを貼り付け**
+5. **Commit changes**
+
+---
+
+再デプロイ後（2-3分）、以下でテストしてください：
+```
+https://tikapi-ozp3.onrender.com/test/takehiko1026
