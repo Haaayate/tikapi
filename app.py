@@ -1,6 +1,5 @@
 """
 TikAPI Test System - FastAPI Application with Official SDK
-TikAPI公式SDKを使用したテストシステム
 """
 
 from fastapi import FastAPI, HTTPException
@@ -24,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="TikAPI Test System",
-    description="TikAPI精度・速度テストシステム（公式SDK版）",
+    description="TikAPI Test System with Official SDK",
     version="1.1.0"
 )
 
@@ -61,7 +60,6 @@ class BulkTestStats(BaseModel):
     tested_at: str
 
 async def check_user_with_sdk(username: str) -> Dict[str, Any]:
-    """TikAPI公式SDKでユーザーをチェック"""
     if not TIKAPI_AVAILABLE:
         return {
             "success": False,
@@ -82,7 +80,6 @@ async def check_user_with_sdk(username: str) -> Dict[str, Any]:
     
     try:
         api = TikAPISDK(TIKAPI_KEY)
-        
         clean_username = username.lstrip('@')
         
         loop = asyncio.get_event_loop()
@@ -150,7 +147,6 @@ async def health():
 
 @app.get("/test/{username}")
 async def test_single_user(username: str):
-    """単一ユーザーをTikAPI SDKでテスト"""
     result = await check_user_with_sdk(username)
     
     return {
@@ -164,7 +160,6 @@ async def test_single_user(username: str):
 
 @app.post("/test/bulk", response_model=BulkTestStats)
 async def test_bulk_users(request: BulkTestRequest):
-    """複数ユーザーをTikAPI SDKでテスト"""
     results = []
     
     for username in request.usernames:
@@ -195,23 +190,3 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-```
-
----
-
-## 🔄 デプロイ
-
-1. **requirements.txt を更新**
-2. **app.py を更新**
-3. **GitHubにコミット**
-4. **自動再デプロイ（2-3分）**
-
----
-
-## 🧪 テスト
-
-デプロイ完了後：
-
-### **1. システム確認**
-```
-https://tikapi-ozp3.onrender.com
