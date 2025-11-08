@@ -5,11 +5,11 @@ services:
     region: oregon
     plan: free
     branch: main
-    buildCommand: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: python app.py
     healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.11.9
       - key: TIKAPI_KEY
         sync: false
