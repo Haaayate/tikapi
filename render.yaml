@@ -1,62 +1,16 @@
 services:
+  # TikAPI Test System - Web Service
   - type: web
     name: tikapi
     env: python
     region: oregon
     plan: free
+    branch: main
     buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
     envVars:
-      - key: PORT
-        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.11.0
       - key: TIKAPI_KEY
         sync: false
-```
-
-5. **Commit changes**
-
----
-
-## 🔄 Render.comで再デプロイ
-
-### **方法1: 自動デプロイ（推奨）**
-
-render.yamlをコミットすると自動的に再デプロイされます
-
-### **方法2: 手動デプロイ**
-```
-Render.com Dashboard
-→ tikapi サービスを選択
-→ Manual Deploy タブ
-→ "Clear build cache & deploy" をクリック
-```
-
----
-
-## ⏱️ 再デプロイ完了まで
-
-**Logsで確認:**
-```
-期待されるログ:
-==> Using render.yaml from repo
-==> Running 'pip install -r requirements.txt'
-    Collecting fastapi==0.104.1
-    Collecting uvicorn[standard]==0.24.0
-    Collecting httpx==0.25.0
-    Collecting TikTokLive==6.6.0
-    Installing collected packages: ...
-    Successfully installed fastapi-0.104.1 uvicorn-0.24.0 ...
-==> Build successful 🎉
-==> Running 'python app.py'
-    INFO:     Started server process
-    INFO:     Application startup complete.
-==> Your service is live 🎉
-```
-
----
-
-## ✅ 確認
-
-再デプロイ完了後：
-```
-https://tikapi.onrender.com
