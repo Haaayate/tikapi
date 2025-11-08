@@ -331,5 +331,45 @@ async def compare_bulk_users(request: BulkTestRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    import os
+    port = int(os.getenv("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
+```
+
+**Commit changes**
+
+---
+
+### **ステップ2: Render.com Settings**
+```
+Build Command:
+python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
+Start Command:
+python app.py
+```
+
+**Save Changes**
+
+---
+
+### **ステップ3: 再デプロイ**
+```
+Manual Deploy → Clear build cache & deploy
+```
+
+---
+
+## 📊 期待されるログ
+```
+==> Building...
+==> Running 'python -m pip install --upgrade pip && python -m pip install -r requirements.txt'
+    Successfully installed fastapi-0.104.1 uvicorn-0.24.0 httpx-0.25.0 TikTokLive-6.6.0
+==> Build successful 🎉
+==> Deploying...
+==> Running 'python app.py'
+    INFO:     Started server process [1]
+    INFO:     Waiting for application startup.
+    INFO:     Application startup complete.
+    INFO:     Uvicorn running on http://0.0.0.0:10000 (Press CTRL+C to quit)
+==> Your service is live 🎉
