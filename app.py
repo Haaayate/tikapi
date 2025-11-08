@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="TikAPI Test System",
     description="TikAPI Test System with Official SDK",
-    version="1.1.0"
+    version="1.2.0"
 )
 
 app.add_middleware(
@@ -59,7 +59,7 @@ class BulkTestStats(BaseModel):
     results: List[Dict[str, Any]]
     tested_at: str
 
-async def check_user_with_sdk(username: str) -> Dict[str, Any]:
+async def check_user_with_sdk(username: str, debug: bool = False) -> Dict[str, Any]:
     if not TIKAPI_AVAILABLE:
         return {
             "success": False,
@@ -103,16 +103,39 @@ async def check_user_with_sdk(username: str) -> Dict[str, Any]:
         
         if data:
             is_live = False
+            live_detection_method = "none"
+            
             if isinstance(data, dict):
                 if data.get("roomId"):
                     is_live = True
+                    live_detection_method = "roomId"
+                elif data.get("room_id"):
+                    is_live = True
+                    live_detection_method = "room_id"
+                elif data.get("liveRoomId"):
+                    is_live = True
+                    live_detection_method = "liveRoomId"
+                elif data.get("live_room_id"):
+                    is_live = True
+                    live_detection_method = "live_room_id"
+                elif data.get("isLive"):
+                    is_live = data.get("isLive")
+                    live_detection_method = "isLive"
+                elif data.get("is_live"):
+                    is_live = data.get("is_live")
+                    live_detection_method = "is_live"
+            
+            if debug:
+                logger.info(f"Detection method: {live_detection_method}")
+                logger.info(f"Raw data keys: {list(data.keys()) if isinstance(data, dict) else 'not dict'}")
             
             return {
                 "success": True,
                 "is_live": is_live,
                 "response_time": response_time,
                 "error": None,
-                "raw_data": data
+                "raw_data": data,
+                "detection_method": live_detection_method
             }
         else:
             return {
@@ -138,12 +161,13 @@ async def check_user_with_sdk(username: str) -> Dict[str, Any]:
 async def root():
     return {
         "message": "TikAPI Test System",
-        "version": "1.1.0 - Official SDK",
+        "version": "1.2.0 - Debug Mode",
         "tikapi_key_configured": TIKAPI_KEY is not None,
         "tikapi_sdk_available": TIKAPI_AVAILABLE,
         "endpoints": {
             "test_single": "/test/{username}",
             "test_bulk": "/test/bulk",
+            "debug": "/debug/{username}",
             "health": "/health"
         }
     }
@@ -166,6 +190,21 @@ async def test_single_user(username: str):
         "is_live": result["is_live"],
         "response_time_ms": result["response_time"],
         "error": result["error"],
+        "tested_at": datetime.now().isoformat()
+    }
+
+@app.get("/debug/{username}")
+async def debug_user(username: str):
+    result = await check_user_with_sdk(username, debug=True)
+    
+    return {
+        "username": username,
+        "success": result["success"],
+        "is_live": result["is_live"],
+        "response_time_ms": result["response_time"],
+        "error": result["error"],
+        "detection_method": result.get("detection_method"),
+        "raw_data": result.get("raw_data"),
         "tested_at": datetime.now().isoformat()
     }
 
