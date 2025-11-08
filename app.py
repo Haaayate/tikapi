@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="TikAPI Test System",
     description="TikAPI Test System with Official SDK",
-    version="1.2.0"
+    version="1.3.0"
 )
 
 app.add_middleware(
@@ -104,30 +104,18 @@ async def check_user_with_sdk(username: str, debug: bool = False) -> Dict[str, A
         if data:
             is_live = False
             live_detection_method = "none"
+            room_id = None
             
             if isinstance(data, dict):
-                if data.get("roomId"):
+                room_id = data.get("userInfo", {}).get("user", {}).get("roomId")
+                
+                if room_id and room_id != "" and room_id != "0":
                     is_live = True
-                    live_detection_method = "roomId"
-                elif data.get("room_id"):
-                    is_live = True
-                    live_detection_method = "room_id"
-                elif data.get("liveRoomId"):
-                    is_live = True
-                    live_detection_method = "liveRoomId"
-                elif data.get("live_room_id"):
-                    is_live = True
-                    live_detection_method = "live_room_id"
-                elif data.get("isLive"):
-                    is_live = data.get("isLive")
-                    live_detection_method = "isLive"
-                elif data.get("is_live"):
-                    is_live = data.get("is_live")
-                    live_detection_method = "is_live"
+                    live_detection_method = "userInfo.user.roomId"
             
             if debug:
                 logger.info(f"Detection method: {live_detection_method}")
-                logger.info(f"Raw data keys: {list(data.keys()) if isinstance(data, dict) else 'not dict'}")
+                logger.info(f"Room ID: {room_id}")
             
             return {
                 "success": True,
@@ -135,7 +123,8 @@ async def check_user_with_sdk(username: str, debug: bool = False) -> Dict[str, A
                 "response_time": response_time,
                 "error": None,
                 "raw_data": data,
-                "detection_method": live_detection_method
+                "detection_method": live_detection_method,
+                "room_id": room_id
             }
         else:
             return {
@@ -161,7 +150,7 @@ async def check_user_with_sdk(username: str, debug: bool = False) -> Dict[str, A
 async def root():
     return {
         "message": "TikAPI Test System",
-        "version": "1.2.0 - Debug Mode",
+        "version": "1.3.0 - Fixed Detection",
         "tikapi_key_configured": TIKAPI_KEY is not None,
         "tikapi_sdk_available": TIKAPI_AVAILABLE,
         "endpoints": {
@@ -204,7 +193,7 @@ async def debug_user(username: str):
         "response_time_ms": result["response_time"],
         "error": result["error"],
         "detection_method": result.get("detection_method"),
-        "raw_data": result.get("raw_data"),
+        "room_id": result.get("room_id"),
         "tested_at": datetime.now().isoformat()
     }
 
