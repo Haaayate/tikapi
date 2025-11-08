@@ -90,12 +90,22 @@ async def check_user_with_sdk(username: str) -> Dict[str, Any]:
         
         response_time = (time.time() - start_time) * 1000
         
-        if response and hasattr(response, 'json'):
-            data = response.json
-            
+        data = None
+        if response:
+            if hasattr(response, 'json') and callable(response.json):
+                data = response.json()
+            elif hasattr(response, 'json') and not callable(response.json):
+                data = response.json
+            elif isinstance(response, dict):
+                data = response
+            else:
+                data = {"raw": str(response)}
+        
+        if data:
             is_live = False
-            if data.get("roomId"):
-                is_live = True
+            if isinstance(data, dict):
+                if data.get("roomId"):
+                    is_live = True
             
             return {
                 "success": True,
@@ -115,6 +125,7 @@ async def check_user_with_sdk(username: str) -> Dict[str, Any]:
             
     except Exception as e:
         response_time = (time.time() - start_time) * 1000
+        logger.error(f"Error checking {username}: {str(e)}")
         return {
             "success": False,
             "is_live": None,
